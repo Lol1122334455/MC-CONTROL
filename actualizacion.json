@@ -1,0 +1,4 @@
+{
+  "version": "1.0.0",
+  "notes": "- Version inicial del panel de control\n- Soporte Linux y Windows\n- Instalador de servidores (Vanilla, Paper, Purpur, Forge, Fabric, Quilt, NeoForge)\n- Gestion de mods/plugins (Modrinth, CurseForge, Spigot)\n- Mundos: guardar, cambiar, descargar\n- Perfiles de configuracion\n- Backups automaticos\n- Temas personalizables\n- Sistema de actualizacion integrado"
+}
