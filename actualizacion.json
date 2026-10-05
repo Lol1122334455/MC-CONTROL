@@ -1,4 +1,4 @@
 {
-  "version": "2.0.7",
-  "notes": "FIX CONSOLA REMOTA v2.0.7:\n- Corregido crash al presionar [I] (variable _port sin global)\n- El menu ya no se congela al entrar (IP local con timeout y cache)\n- [Q] y [Esc] salen del menu"
+  "version": "2.0.8",
+  "notes": "TOAST EN TODAS PARTES v2.0.8:\n- 150+ avisos migrados a notificacion toast en esquina\n- Vanilla + Mods, backups, perfiles, mundos, jugadores, ajustes\n- Solo los mensajes largos siguen en pantalla completa"
 }
