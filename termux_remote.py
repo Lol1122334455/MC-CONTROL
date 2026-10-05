@@ -21,7 +21,7 @@ import json
 END = '---END---'
 DEFAULT_PORT = 25576
 BLOCKS = '_.:-=+*#%@'
-CLIENT_VERSION = "1.0"
+CLIENT_VERSION = "1.1"
 UPDATE_JSON = "https://raw.githubusercontent.com/Lol1122334455/MC-CONTROL/main/actualizacion.json"
 CLIENT_URL = "https://raw.githubusercontent.com/Lol1122334455/MC-CONTROL/main/termux_remote.py"
 
@@ -347,115 +347,210 @@ def watch_mode(sock, n=20):
     return True
 
 
-def options_menu(sock, info):
-    role = info['role']
-    while True:
-        clear()
-        box('OPCIONES', ['Usuario: {} [{}]'.format(info['user'], role)])
-        print()
-        opts = []
-        if role != 'invitado':
-            opts.append('[1] Enviar comando')
-        else:
-            opts.append('[1] Enviar comando (no permitido)')
-        opts += ['[2] Ver logs', '[3] Watch en vivo', '[4] Volver']
-        for o in opts:
-            cline(o)
-        op = center_input('Opcion:')
-        if op is None:
-            return True
-        op = op.strip()
-        if op == '1' and role != 'invitado':
-            cmd = center_input('Comando:')
-            if cmd is None:
+def read_key_line(prompt='> '):
+    try:
+        import termios
+        import tty
+    except:
+        return None, None
+    if not sys.stdin.isatty():
+        return None, None
+    try:
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+    except:
+        return None, None
+    buf = ''
+    try:
+        tty.setraw(fd)
+        sys.stdout.write(prompt)
+        sys.stdout.flush()
+        while True:
+            ch = sys.stdin.read(1)
+            if not ch:
+                raise EOFError
+            if ch in ('\r', '\n'):
+                sys.stdout.write('\r\n')
+                sys.stdout.flush()
+                return buf, None
+            o = ord(ch)
+            if o == 3:
+                raise KeyboardInterrupt
+            if o in (127, 8):
+                if buf:
+                    buf = buf[:-1]
+                    sys.stdout.write('\b \b')
+                    sys.stdout.flush()
                 continue
-            if not cmd:
+            if o < 32:
+                if not buf:
+                    return '', chr(o + 96)
                 continue
-            try:
-                sock.sendall((cmd + '\n').encode())
-                print(recv_all(sock))
-            except:
-                cline('Se perdio la conexion.')
-                return False
-            center_input('(Enter para continuar):')
-        elif op == '2':
-            n = center_input('Lineas [30]:', default='30')
-            if n is None:
-                continue
-            try:
-                sock.sendall(('logs {}\n'.format(n)).encode())
-                print(recv_all(sock))
-            except:
-                cline('Se perdio la conexion.')
-                return False
-            center_input('(Enter para continuar):')
-        elif op == '3':
-            if not watch_mode(sock):
-                return False
-        elif op == '4':
-            return True
-        else:
-            cline('Opcion invalida o no permitida.')
+            if ch.isprintable():
+                buf += ch
+                sys.stdout.write(ch)
+                sys.stdout.flush()
+    finally:
+        try:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        except:
+            pass
+
+
+def info_lines(st, info, role, hist_ram, hist_players):
+    if role == 'usuario':
+        return ['Comandos restantes hoy:', '{}'.format(st.get('cmds', '?'))]
+    cpu = st['cpu']
+    cpu_txt = '?' if cpu == '-1' else '{}%'.format(cpu)
+    lines = [
+        '{} [{}]'.format(info['user'], role),
+        'Clave: ******',
+        'Estado: {}'.format('ONLINE' if st['online'] else 'OFFLINE'),
+        'RAM: {}MB {}'.format(st['ram'], spark(hist_ram)),
+        'CPU: {}'.format(cpu_txt),
+        'Jug: {} {}'.format(st['nplayers'], (st['names'] or '-')),
+        '{}'.format(spark(hist_players)),
+        'Mundo: {} Up: {}'.format(fmt_size(st['world']), fmt_time(st['uptime'])),
+    ]
+    if info.get('note'):
+        lines.append(info['note'])
+    if role == 'invitado':
+        lines.append('Solo lectura')
+    return lines
+
+
+def draw_split(st, info, role, hist_ram, hist_players, logs, last_out):
+    w, _h = term_size()
+    clear()
+    info_l = info_lines(st, info, role, hist_ram, hist_players)
+    bar = '[Ctrl+L] Logs  [Ctrl+W] Watch  [Ctrl+P] Jugadores  [Ctrl+Q] Salir'
+    if w >= 100:
+        lw = w - 36
+        left = []
+        for ln in logs[-12:]:
+            left.append(ln[:lw])
+        if last_out:
+            left.append('-' * min(lw, 30))
+            for ln in last_out[-6:]:
+                left.append(ln[:lw])
+        n = max(len(left), len(info_l))
+        print('CONSOLA'.ljust(lw) + ' | ' + 'DATOS')
+        for i in range(n):
+            l = left[i] if i < len(left) else ''
+            r = info_l[i] if i < len(info_l) else ''
+            print(l.ljust(lw)[:lw] + ' | ' + r)
+    else:
+        box('DATOS', info_l)
+        print('-' * w)
+        for ln in logs[-8:]:
+            print(ln[:w])
+        if last_out:
+            print('-' * 20)
+            for ln in last_out[-5:]:
+                print(ln[:w])
+    print('-' * w)
+    cline(bar)
 
 
 def main_screen(sock, info):
     hist_ram, hist_players = [], []
+    role = info['role']
+    last_out = []
+    many_logs = False
+    use_raw = sys.stdin.isatty()
+    try:
+        import termios
+    except:
+        use_raw = False
     while True:
         st = poll_stats(sock)
         if st is None:
             cline('Se perdio la conexion.')
             time.sleep(1.5)
             return
+        role = st.get('role') or role
         try:
             hist_ram.append(int(st['ram']))
             hist_players.append(int(st['nplayers']))
         except:
             pass
         hist_ram, hist_players = hist_ram[-20:], hist_players[-20:]
-        clear()
-        role = st.get('role') or info['role']
-        cmds = st.get('cmds', '?')
-        cpu = st['cpu']
-        cpu_txt = '?' if cpu == '-1' else '{}%'.format(cpu)
-        lines = [
-            'Usuario: {} [{}]  Clave: ******'.format(info['user'], role),
-            '',
-            'Estado: {}'.format('ONLINE' if st['online'] else 'OFFLINE'),
-            'RAM: {}MB {}  CPU: {}'.format(st['ram'], spark(hist_ram), cpu_txt),
-            'Jugadores ({}): {}'.format(st['nplayers'], st['names'] or '-'),
-            '{}'.format(spark(hist_players)),
-            'Mundo: {}  Up: {}'.format(fmt_size(st['world']), fmt_time(st['uptime'])),
-        ]
-        if info.get('note'):
-            lines.append(info['note'])
-        if role == 'usuario' and cmds != '?':
-            lines.append('Comandos restantes hoy: {}'.format(cmds))
-        if role == 'invitado':
-            lines.append('Invitado: solo lectura (sin comandos)')
-        box('TERMUX REMOTE', lines)
-        print()
-        cline('[Ctrl+C] Opciones   [5] Salir')
         try:
-            op = input('  > ').strip().lower()
-        except KeyboardInterrupt:
-            if not options_menu(sock, dict(info, role=role)):
-                return
-            continue
-        except EOFError:
-            op = '5'
-        if op in ('5', 'quit', 'exit', 'salir', 'q'):
-            try:
-                sock.sendall(b'quit\n')
-                print(recv_all(sock))
-            except:
-                pass
+            sock.sendall('logs {}\n'.format(25 if many_logs else 10).encode())
+            logs = recv_all(sock).splitlines()
+        except:
+            cline('Se perdio la conexion.')
+            time.sleep(1.5)
             return
-        elif op in ('1', '2', '3', '4'):
-            if not options_menu(sock, dict(info, role=role)):
+        draw_split(st, info, role, hist_ram, hist_players, logs, last_out)
+        if use_raw:
+            try:
+                text, ctrl = read_key_line('> ')
+            except KeyboardInterrupt:
+                continue
+            except (OSError, EOFError):
+                use_raw = False
+                continue
+            if ctrl:
+                c = ctrl.lower()
+                if c == 'q':
+                    try:
+                        sock.sendall(b'quit\n')
+                        recv_all(sock)
+                    except:
+                        pass
+                    return
+                elif c == 'l':
+                    many_logs = not many_logs
+                    continue
+                elif c == 'w':
+                    if not watch_mode(sock):
+                        return
+                    continue
+                elif c == 'p':
+                    try:
+                        sock.sendall(b'players\n')
+                        last_out = recv_all(sock).splitlines() or ['(nadie)']
+                    except:
+                        cline('Se perdio la conexion.')
+                        time.sleep(1.5)
+                        return
+                    continue
+                else:
+                    continue
+            if not (text or '').strip():
+                continue
+            try:
+                sock.sendall((text.strip() + '\n').encode())
+                last_out = recv_all(sock).splitlines() or ['(sin respuesta)']
+            except:
+                cline('Se perdio la conexion.')
+                time.sleep(1.5)
                 return
         else:
-            cline('Escribe el numero o pulsa Ctrl+C para opciones.')
-            time.sleep(1)
+            try:
+                text = input('> ').strip()
+            except (KeyboardInterrupt, EOFError):
+                return
+            if text.lower() in ('q', 'quit', 'exit', 'salir'):
+                try:
+                    sock.sendall(b'quit\n')
+                except:
+                    pass
+                return
+            if text.lower() == 'watch':
+                if not watch_mode(sock):
+                    return
+                continue
+            if not text:
+                continue
+            try:
+                sock.sendall((text + '\n').encode())
+                last_out = recv_all(sock).splitlines()
+            except:
+                cline('Se perdio la conexion.')
+                time.sleep(1.5)
+                return
 
 
 def main():
