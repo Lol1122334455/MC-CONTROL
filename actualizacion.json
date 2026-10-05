@@ -1,4 +1,4 @@
 {
-  "version": "2.1.0",
-  "notes": "USUARIOS Y MENU TERMUX v2.1.0:\n- Sistema de usuarios con clave (hash SHA256, no texto plano)\n- Solicitudes de registro: el creador aprueba o rechaza desde el panel\n- El creador puede crear/eliminar usuarios ([U]/[E])\n- Nuevo comando statsline: RAM, CPU, jugadores, mundo, uptime\n- termux_remote.py ahora tiene MENU con estado + minigraficas\n- Sin usuarios = nadie entra (seguro por defecto)"
+  "version": "2.2.0",
+  "notes": "ROLES Y MENU TERMUX v2.2.0:\n- Niveles: creador, admin, usuario, invitado\n- Admin: comandos ilimitados. Usuario: limite diario (def 50)\n- Invitado: solo lectura, expira en 24h\n- Claves con hash SHA256, registro con confirmacion\n- Cliente con login centrado, menu con graficas y Ctrl+C para opciones"
 }
