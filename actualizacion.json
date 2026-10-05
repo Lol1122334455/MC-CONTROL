@@ -1,4 +1,4 @@
 {
-  "version": "2.0.8",
-  "notes": "TOAST EN TODAS PARTES v2.0.8:\n- 150+ avisos migrados a notificacion toast en esquina\n- Vanilla + Mods, backups, perfiles, mundos, jugadores, ajustes\n- Solo los mensajes largos siguen en pantalla completa"
+  "version": "2.0.9",
+  "notes": "CLIENTE TERMUX v2.0.9:\n- Nuevo termux_remote.py: un solo archivo, sin dependencias\n- Conectar desde el celular: comandos, status, players\n- logs [n]: ver ultimas lineas del log\n- watch: logs en vivo cada 2s\n- Servidor ahora responde: help, logs, players, status, quit"
 }
