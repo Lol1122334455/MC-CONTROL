@@ -1,5 +1,5 @@
 {
-  "version": "2.2.2",
-  "termux": "1.1",
-  "notes": "CONSOLA DIVIDIDA v2.2.2:\n- Cliente: pantalla dividida (consola grande + datos al lado)\n- Logs en vivo directo en la consola, sin opciones\n- Atajos Ctrl reales: L logs, W watch, P jugadores, Q salir\n- Rol usuario: solo ve su limite diario (sin RAM/CPU/usuarios)\n- Invitados expirados tambien bloqueados en sesion"
+  "version": "2.2.3",
+  "termux": "1.2",
+  "notes": "NIVEL EN SOLICITUDES v2.2.3:\n- Al registrarse se pide nivel (admin/usuario/invitado)\n- El creador ve nombre + nivel pedido + clave\n- Al aprobar propone el nivel pedido (Enter) o lo cambia\n- No se puede pedir creador (cae a usuario)"
 }

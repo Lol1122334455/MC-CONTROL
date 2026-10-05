@@ -21,7 +21,7 @@ import json
 END = '---END---'
 DEFAULT_PORT = 25576
 BLOCKS = '_.:-=+*#%@'
-CLIENT_VERSION = "1.1"
+CLIENT_VERSION = "1.2"
 UPDATE_JSON = "https://raw.githubusercontent.com/Lol1122334455/MC-CONTROL/main/actualizacion.json"
 CLIENT_URL = "https://raw.githubusercontent.com/Lol1122334455/MC-CONTROL/main/termux_remote.py"
 
@@ -311,15 +311,19 @@ def register_screen(sock):
             cline('Las claves no coinciden.')
             time.sleep(1.5)
             continue
+        lv = center_input('Nivel [1]admin [2]usuario [3]invitado (2):', default='2')
+        if lv is None:
+            return False
+        role = {'1': 'admin', '2': 'usuario', '3': 'invitado'}.get(lv.strip(), 'usuario')
         clear()
-        box('SOLICITUD DE REGISTRO', ['Usuario: ' + nu, '', 'ENVIAR SOLICITUD'])
+        box('SOLICITUD DE REGISTRO', ['Usuario: ' + nu, 'Nivel: ' + role, '', 'ENVIAR SOLICITUD'])
         print()
         cline('[E] Enviar  [Q] Cancelar')
         op = center_input('Opcion:')
         if op is None or op.lower() != 'e':
             return False
         try:
-            sock.sendall('register {} {}\n'.format(nu, pw).encode())
+            sock.sendall('register {} {} {}\n'.format(nu, pw, role).encode())
             cline(recv_all(sock))
         except Exception as e:
             cline('Error: {}'.format(e))
