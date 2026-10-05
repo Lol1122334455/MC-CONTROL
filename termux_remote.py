@@ -64,6 +64,50 @@ def masked_input(prompt):
     return input(prompt)
 
 
+def cline(text=''):
+    w, _h = term_size()
+    print(text.center(w).rstrip())
+
+
+def center_input(label, mask=False, default=''):
+    w, _h = term_size()
+    pad = max(0, (w - len(label) - 24) // 2)
+    prompt = ' ' * pad + label + ' '
+    try:
+        if mask:
+            import getpass
+            try:
+                r = getpass.getpass(prompt)
+                return r.strip() if r else default
+            except:
+                pass
+        r = input(prompt)
+        r = r.strip()
+        return r if r else default
+    except (KeyboardInterrupt, EOFError):
+        return None
+
+
+def connect_screen():
+    clear()
+    box('TERMUX REMOTE', ['by Control Fundencion', '', 'CONECTAR AL SERVIDOR'])
+    print()
+    host = center_input('IP:')
+    if host is None:
+        return None, None
+    if not host:
+        return None, None
+    port_s = center_input('Puerto [25576]:', default='25576')
+    if port_s is None:
+        return None, None
+    try:
+        return host, int(port_s)
+    except:
+        cline('Puerto invalido.')
+        time.sleep(1.5)
+        return None, None
+
+
 def spark(values, width=14):
     vals = (values or [])[-width:]
     if not vals or max(vals) <= 0:
@@ -152,17 +196,13 @@ def poll_stats(sock):
 def login_screen(sock):
     while True:
         clear()
-        box('TERMUX REMOTE', ['by Control Fundencion', '', 'INICIO DE SESION'],
-            subtitle='')
+        box('TERMUX REMOTE', ['by Control Fundencion', '', 'INICIO DE SESION'])
         print()
-        print('  [1] Entrar')
-        print('  [2] Solicitud de registro')
-        print('  [Q] Salir')
-        try:
-            op = input('  Opcion: ').strip().lower()
-        except (KeyboardInterrupt, EOFError):
-            return None
-        if op in ('q', 'quit', 'exit'):
+        cline('[1] Entrar')
+        cline('[2] Solicitud de registro')
+        cline('[Q] Salir')
+        op = center_input('Opcion:')
+        if op is None or op.lower() in ('q', 'quit', 'exit'):
             return None
         if op == '2':
             if register_screen(sock):
@@ -170,29 +210,30 @@ def login_screen(sock):
             continue
         if op != '1':
             continue
-        try:
-            user = input('  USUARIO: ').strip()
-            pw = masked_input('  CONTRASENA: ').strip()
-        except (KeyboardInterrupt, EOFError):
+        user = center_input('USUARIO:')
+        if user is None:
+            continue
+        pw = center_input('CONTRASENA:', mask=True)
+        if pw is None:
             continue
         if not user or not pw:
-            print('  Completa ambos campos.')
+            cline('Completa ambos campos.')
             time.sleep(1.5)
             continue
         try:
             sock.sendall((user + '\n').encode())
         except:
-            print('  Conexion perdida.')
+            cline('Conexion perdida.')
             return None
         resp = recv_line(sock).strip()
         if 'Password:' not in resp:
-            print('  ' + resp)
+            cline(resp)
             time.sleep(2)
             continue
         try:
             sock.sendall((pw + '\n').encode())
         except:
-            print('  Conexion perdida.')
+            cline('Conexion perdida.')
             return None
         resp = recv_all(sock).strip()
         m = re.search(r'\[(.*?)\]', resp)
@@ -200,7 +241,7 @@ def login_screen(sock):
         note = resp.split('].', 1)[1].strip() if '].' in resp else ''
         if 'Bienvenido' in resp:
             return {'user': user, 'role': role, 'note': note}
-        print('  ' + resp)
+        cline(resp)
         time.sleep(2)
 
 
@@ -209,37 +250,37 @@ def register_screen(sock):
         clear()
         box('SOLICITUD DE REGISTRO', ['LLENA LO NECESARIO'])
         print()
-        try:
-            nu = input('  USUARIO: ').strip()
-            if not nu:
-                return False
-            pw = masked_input('  CONTRASENA: ').strip()
-            pw2 = masked_input('  CONFIRMA CONTRASENA: ').strip()
-        except (KeyboardInterrupt, EOFError):
+        nu = center_input('USUARIO:')
+        if nu is None:
+            return False
+        if not nu:
+            return False
+        pw = center_input('CONTRASENA:', mask=True)
+        if pw is None:
+            return False
+        pw2 = center_input('CONFIRMA CONTRASENA:', mask=True)
+        if pw2 is None:
             return False
         if not nu or not pw or not pw2:
-            print('  Completa todos los campos.')
+            cline('Completa todos los campos.')
             time.sleep(1.5)
             continue
         if pw != pw2:
-            print('  Las claves no coinciden.')
+            cline('Las claves no coinciden.')
             time.sleep(1.5)
             continue
         clear()
         box('SOLICITUD DE REGISTRO', ['Usuario: ' + nu, '', 'ENVIAR SOLICITUD'])
         print()
-        print('  [E] Enviar  [Q] Cancelar')
-        try:
-            op = input('  Opcion: ').strip().lower()
-        except (KeyboardInterrupt, EOFError):
-            return False
-        if op != 'e':
+        cline('[E] Enviar  [Q] Cancelar')
+        op = center_input('Opcion:')
+        if op is None or op.lower() != 'e':
             return False
         try:
             sock.sendall('register {} {}\n'.format(nu, pw).encode())
-            print('  ' + recv_all(sock))
+            cline(recv_all(sock))
         except Exception as e:
-            print('  Error: {}'.format(e))
+            cline('Error: {}'.format(e))
         time.sleep(2)
         return True
 
@@ -277,15 +318,14 @@ def options_menu(sock, info):
             opts.append('[1] Enviar comando (no permitido)')
         opts += ['[2] Ver logs', '[3] Watch en vivo', '[4] Volver']
         for o in opts:
-            print('  ' + o)
-        try:
-            op = input('  Opcion: ').strip()
-        except (KeyboardInterrupt, EOFError):
+            cline(o)
+        op = center_input('Opcion:')
+        if op is None:
             return True
+        op = op.strip()
         if op == '1' and role != 'invitado':
-            try:
-                cmd = input('  Comando: ').strip()
-            except (KeyboardInterrupt, EOFError):
+            cmd = center_input('Comando:')
+            if cmd is None:
                 continue
             if not cmd:
                 continue
@@ -293,34 +333,27 @@ def options_menu(sock, info):
                 sock.sendall((cmd + '\n').encode())
                 print(recv_all(sock))
             except:
-                print('  Se perdio la conexion.')
+                cline('Se perdio la conexion.')
                 return False
-            try:
-                input('  (Enter para continuar)')
-            except (KeyboardInterrupt, EOFError):
-                pass
+            center_input('(Enter para continuar):')
         elif op == '2':
-            try:
-                n = input('  Lineas [30]: ').strip() or '30'
-            except (KeyboardInterrupt, EOFError):
+            n = center_input('Lineas [30]:', default='30')
+            if n is None:
                 continue
             try:
                 sock.sendall(('logs {}\n'.format(n)).encode())
                 print(recv_all(sock))
             except:
-                print('  Se perdio la conexion.')
+                cline('Se perdio la conexion.')
                 return False
-            try:
-                input('  (Enter para continuar)')
-            except (KeyboardInterrupt, EOFError):
-                pass
+            center_input('(Enter para continuar):')
         elif op == '3':
             if not watch_mode(sock):
                 return False
         elif op == '4':
             return True
         else:
-            print('  Opcion invalida o no permitida.')
+            cline('Opcion invalida o no permitida.')
 
 
 def main_screen(sock, info):
@@ -328,7 +361,8 @@ def main_screen(sock, info):
     while True:
         st = poll_stats(sock)
         if st is None:
-            print('Se perdio la conexion.')
+            cline('Se perdio la conexion.')
+            time.sleep(1.5)
             return
         try:
             hist_ram.append(int(st['ram']))
@@ -358,7 +392,7 @@ def main_screen(sock, info):
             lines.append('Invitado: solo lectura (sin comandos)')
         box('TERMUX REMOTE', lines)
         print()
-        print('  [Ctrl+C] Opciones   [5] Salir')
+        cline('[Ctrl+C] Opciones   [5] Salir')
         try:
             op = input('  > ').strip().lower()
         except KeyboardInterrupt:
@@ -378,24 +412,30 @@ def main_screen(sock, info):
             if not options_menu(sock, dict(info, role=role)):
                 return
         else:
-            print('  Escribe el numero o pulsa Ctrl+C para opciones.')
+            cline('Escribe el numero o pulsa Ctrl+C para opciones.')
+            time.sleep(1)
 
 
 def main():
-    host = sys.argv[1] if len(sys.argv) > 1 else input('IP del servidor: ').strip()
-    if not host:
-        print('IP invalida')
-        return
-    try:
-        port = int(sys.argv[2]) if len(sys.argv) > 2 else int((input('Puerto [25576]: ').strip() or '25576'))
-    except:
-        print('Puerto invalido')
-        return
-    print('Conectando a {}:{}...'.format(host, port))
+    clear()
+    if len(sys.argv) > 1:
+        host = sys.argv[1]
+        try:
+            port = int(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_PORT
+        except:
+            cline('Puerto invalido')
+            return
+    else:
+        host, port = connect_screen()
+        if not host or not port:
+            return
+    clear()
+    box('TERMUX REMOTE', ['Conectando a {}:{}...'.format(host, port)])
     try:
         s = socket.create_connection((host, port), timeout=10)
     except Exception as e:
-        print('No se pudo conectar: {}'.format(e))
+        cline('No se pudo conectar: {}'.format(e))
+        time.sleep(2)
         return
     banner = recv_line(s).strip()
     print(banner)
@@ -418,14 +458,14 @@ def main():
             s.close()
         except:
             pass
-        print('Adios.')
+        cline('Adios.')
         return
     main_screen(s, info)
     try:
         s.close()
     except:
         pass
-    print('Desconectado.')
+    cline('Desconectado.')
 
 
 if __name__ == '__main__':

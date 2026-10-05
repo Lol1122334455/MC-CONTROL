@@ -1,4 +1,4 @@
 {
-  "version": "2.2.0",
-  "notes": "ROLES Y MENU TERMUX v2.2.0:\n- Niveles: creador, admin, usuario, invitado\n- Admin: comandos ilimitados. Usuario: limite diario (def 50)\n- Invitado: solo lectura, expira en 24h\n- Claves con hash SHA256, registro con confirmacion\n- Cliente con login centrado, menu con graficas y Ctrl+C para opciones"
+  "version": "2.2.1",
+  "notes": "TERMUX PANTALLA COMPLETA v2.2.1:\n- Desde que arranca todo centrado (IP, login, registro, menu)\n- Ya no se ve el prompt ~/ de Termux\n- Contrasena oculta al escribir"
 }
