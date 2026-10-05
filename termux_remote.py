@@ -15,10 +15,52 @@ import shutil
 import socket
 import sys
 import time
+import os
+import json
 
 END = '---END---'
 DEFAULT_PORT = 25576
 BLOCKS = '_.:-=+*#%@'
+CLIENT_VERSION = "1.0"
+UPDATE_JSON = "https://raw.githubusercontent.com/Lol1122334455/MC-CONTROL/main/actualizacion.json"
+CLIENT_URL = "https://raw.githubusercontent.com/Lol1122334455/MC-CONTROL/main/termux_remote.py"
+
+
+def _is_newer(a, b):
+    try:
+        pa = [int(x) for x in str(a).split('.')]
+        pb = [int(x) for x in str(b).split('.')]
+        return pa > pb
+    except:
+        return str(a) != str(b)
+
+
+def self_update():
+    try:
+        import urllib.request
+        req = urllib.request.Request(UPDATE_JSON, headers={'User-Agent': 'MC-Control-Termux/1.0'})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = json.loads(r.read().decode())
+        latest = str(data.get('termux', '')).lstrip('v')
+        if not latest or not _is_newer(latest, CLIENT_VERSION):
+            return False
+        box('ACTUALIZACION', ['Nueva version del cliente: ' + latest, '', 'Descargando...'])
+        req2 = urllib.request.Request(CLIENT_URL, headers={'User-Agent': 'MC-Control-Termux/1.0'})
+        with urllib.request.urlopen(req2, timeout=60) as r2:
+            blob = r2.read()
+        if not blob.startswith(b'#!/usr/bin/env python3'):
+            return False
+        me = os.path.abspath(sys.argv[0])
+        tmp = me + '.new'
+        with open(tmp, 'wb') as f:
+            f.write(blob)
+        os.replace(tmp, me)
+        box('ACTUALIZACION', ['Listo. Reiniciando...'])
+        time.sleep(1.5)
+        os.execv(sys.executable, [sys.executable, me] + sys.argv[1:])
+    except Exception:
+        return False
+    return True
 
 
 def term_size():
@@ -417,6 +459,8 @@ def main_screen(sock, info):
 
 
 def main():
+    clear()
+    self_update()
     clear()
     if len(sys.argv) > 1:
         host = sys.argv[1]

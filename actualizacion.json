@@ -1,4 +1,5 @@
 {
   "version": "2.2.1",
+  "termux": "1.0",
   "notes": "TERMUX PANTALLA COMPLETA v2.2.1:\n- Desde que arranca todo centrado (IP, login, registro, menu)\n- Ya no se ve el prompt ~/ de Termux\n- Contrasena oculta al escribir"
 }
