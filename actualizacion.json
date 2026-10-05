@@ -1,4 +1,4 @@
 {
-  "version": "2.0.9",
-  "notes": "CLIENTE TERMUX v2.0.9:\n- Nuevo termux_remote.py: un solo archivo, sin dependencias\n- Conectar desde el celular: comandos, status, players\n- logs [n]: ver ultimas lineas del log\n- watch: logs en vivo cada 2s\n- Servidor ahora responde: help, logs, players, status, quit"
+  "version": "2.1.0",
+  "notes": "USUARIOS Y MENU TERMUX v2.1.0:\n- Sistema de usuarios con clave (hash SHA256, no texto plano)\n- Solicitudes de registro: el creador aprueba o rechaza desde el panel\n- El creador puede crear/eliminar usuarios ([U]/[E])\n- Nuevo comando statsline: RAM, CPU, jugadores, mundo, uptime\n- termux_remote.py ahora tiene MENU con estado + minigraficas\n- Sin usuarios = nadie entra (seguro por defecto)"
 }
