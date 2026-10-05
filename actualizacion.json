@@ -1,0 +1,4 @@
+{
+  "version": "2.0.3",
+  "notes": "GRAFICA EN TIEMPO REAL v2.0.3:\n- Mini-grafica sparkline en el header del menu\n- Muestra historial de RAM (ultimas 30 muestras)\n- Muestra historial de jugadores conectados\n- Se actualiza sola mientras navegas el menu\n- Solo visible cuando el servidor esta ONLINE"
+}
