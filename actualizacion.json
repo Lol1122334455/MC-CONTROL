@@ -1,4 +1,4 @@
 {
-  "version": "2.0.4",
-  "notes": "LOGO DEL SERVIDOR v2.0.4:\n- Nuevo gestor de icono (server-icon.png 64x64)\n- Desde archivo local o URL\n- Redimensiona automatico si tienes Pillow\n- Integrado en el menu MOTD ([I] Icono)\n- Como Hypixel: logo + descripcion en la lista de servidores"
+  "version": "2.0.5",
+  "notes": "NOTIFICACIONES TOAST v2.0.5:\n- Nueva notificacion tipo toast en la esquina superior derecha\n- Ya no tapa toda la pantalla al iniciar/detener/reiniciar\n- Muestra ✔ verde en exito, ✘ rojo en error\n- Con borde del color del tema"
 }
