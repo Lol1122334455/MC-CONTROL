@@ -1,4 +1,4 @@
 {
-  "version": "2.0.5",
-  "notes": "NOTIFICACIONES TOAST v2.0.5:\n- Nueva notificacion tipo toast en la esquina superior derecha\n- Ya no tapa toda la pantalla al iniciar/detener/reiniciar\n- Muestra ✔ verde en exito, ✘ rojo en error\n- Con borde del color del tema"
+  "version": "2.0.6",
+  "notes": "ACTUALIZADOR MAS RAPIDO v2.0.6:\n- El verificador ahora consulta la API de GitHub como respaldo\n- Las actualizaciones se detectan al instante, sin esperar cache\n- Si el CDN tarda, igual encuentra la version nueva"
 }
