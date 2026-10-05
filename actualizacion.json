@@ -1,4 +1,4 @@
 {
-  "version": "2.0.3",
-  "notes": "GRAFICA EN TIEMPO REAL v2.0.3:\n- Mini-grafica sparkline en el header del menu\n- Muestra historial de RAM (ultimas 30 muestras)\n- Muestra historial de jugadores conectados\n- Se actualiza sola mientras navegas el menu\n- Solo visible cuando el servidor esta ONLINE"
+  "version": "2.0.4",
+  "notes": "LOGO DEL SERVIDOR v2.0.4:\n- Nuevo gestor de icono (server-icon.png 64x64)\n- Desde archivo local o URL\n- Redimensiona automatico si tienes Pillow\n- Integrado en el menu MOTD ([I] Icono)\n- Como Hypixel: logo + descripcion en la lista de servidores"
 }
