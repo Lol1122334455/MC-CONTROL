@@ -1,5 +1,5 @@
 {
-  "version": "2.2.3",
+  "version": "2.2.4",
   "termux": "1.2",
-  "notes": "NIVEL EN SOLICITUDES v2.2.3:\n- Al registrarse se pide nivel (admin/usuario/invitado)\n- El creador ve nombre + nivel pedido + clave\n- Al aprobar propone el nivel pedido (Enter) o lo cambia\n- No se puede pedir creador (cae a usuario)"
+  "notes": "INTERNET v2.2.4:\n- Nueva guia [N] para conectar fuera de casa\n- Muestra tu IP publica actual\n- 3 formas: Tailscale (facil), abrir puerto, tunel playit.gg\n- Aviso de seguridad incluido"
 }
